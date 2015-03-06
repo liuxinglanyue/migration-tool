@@ -82,6 +82,8 @@ public class JdbcManager {
 	}
 	
 	
+	
+	
 	public Connection getConnection(MysqlPoolFactory pool) {
 		try {
 			return pool.getConnection();

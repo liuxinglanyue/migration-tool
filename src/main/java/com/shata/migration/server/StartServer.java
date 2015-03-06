@@ -10,6 +10,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.shata.migration.constants.TableConstants;
 import com.shata.migration.netty.NettyServer;
 import com.shata.migration.utils.Config;
 import com.shata.migration.utils.NamedThreadFactory;
@@ -25,6 +26,7 @@ public class StartServer {
 		PropertyConfigurator.configureAndWatch("config/log4j.properties", 5000L);
 		
 		//insert db
+		TableConstants.init();
 		
 		final NettyServer nettyServer = new NettyServer();
 		
