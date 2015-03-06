@@ -23,7 +23,7 @@ public abstract class AbstractClient implements Client {
 			throw new Exception("参数错误！" + message);
 		}
 		int requestId = incId.incrementAndGet();
-		return invokeSyncIntern(requestId, requestId + "|" + message);
+		return invokeSyncIntern(requestId, message + "|" + requestId);
 	}
 
 	private Object invokeSyncIntern(int requestId, String message) throws Exception {
