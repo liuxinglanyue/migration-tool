@@ -41,6 +41,6 @@ create table `migration_device` (
   `ability` int(11) default 0 comment '能力值',
   `create_time` datetime default null comment '创建时间',
   `update_time` datetime default null comment '更新时间',
-  primary key (`id`)
+  primary key (`id`),
   UNIQUE KEY `UK_device` (`devicename`,`tables`) 
 ) engine=innodb default charset=utf8 comment='迁移表，存储当前id';
