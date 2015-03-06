@@ -23,6 +23,9 @@ public class StartServer {
 	
 	public static void main(String[] args) throws Exception {
 		PropertyConfigurator.configureAndWatch("config/log4j.properties", 5000L);
+		
+		//insert db
+		
 		final NettyServer nettyServer = new NettyServer();
 		
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
