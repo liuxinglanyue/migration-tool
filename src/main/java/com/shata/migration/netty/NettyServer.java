@@ -11,6 +11,7 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.DefaultChannelPipeline;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.codec.string.StringDecoder;
 import org.jboss.netty.handler.codec.string.StringEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,7 @@ public class NettyServer {
 		bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
 			public ChannelPipeline getPipeline() throws Exception {
 				ChannelPipeline pipeline = new DefaultChannelPipeline();
-				pipeline.addLast("decoder", new StringEncoder());
+				pipeline.addLast("decoder", new StringDecoder());
 				pipeline.addLast("encoder", new StringEncoder());
 				pipeline.addLast("handler", new NettyServerHandler(threadPool, timeout));
 				return pipeline;

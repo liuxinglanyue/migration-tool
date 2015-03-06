@@ -34,7 +34,7 @@ public abstract class AbstractClient implements Client {
 			if (isDebugEnabled) {
 				log.debug("client ready to send message,request id: " + requestId);
 			}
-			sendRequest(message, getConnectTimeout());
+			sendRequest(requestId, message, getConnectTimeout());
 			if (isDebugEnabled) {
 				log.debug("client write message to send buffer,wait for response,request id: " + requestId);
 			}
@@ -88,5 +88,5 @@ public abstract class AbstractClient implements Client {
 		}
 	}
 
-	public abstract void sendRequest(String message, int timeout) throws Exception;
+	public abstract void sendRequest(int requestId, String message, int timeout) throws Exception;
 }

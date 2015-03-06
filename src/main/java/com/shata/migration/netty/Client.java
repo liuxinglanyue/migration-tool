@@ -11,8 +11,9 @@ public interface Client {
 	public int getServerPort();
 
 	public int getConnectTimeout();
+	
+	public void close();
 
-	public long getSendingBytesSize();
+	public boolean validate();
 
-	//public ClientFactory getClientFactory();
 }
