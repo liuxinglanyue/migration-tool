@@ -55,8 +55,9 @@ public class DeviceConstants {
 		DeviceEntity device = devices.get(bodies[0] + bodies[1]);
 		if(TableConstants.reduceAbility(device)) {
 			device = null;
+			return Commands.return_response(bodies[2], Commands.SUCC);
 		}
 		
-		return Commands.return_response(bodies[2], Commands.SUCC);
+		return Commands.return_response(bodies[2], Commands.ERROR);
 	}
 }

@@ -47,6 +47,33 @@ public class JdbcManager {
 		return flag;
 	}
 	
+	public static boolean delete(MysqlPoolFactory pool, String sql) {
+		boolean flag = false;
+		Connection connection = getConnection(pool);
+		if(null != connection) {
+			Statement stmt = null;
+			try {
+				stmt = connection.createStatement();
+				stmt.execute(sql);
+				flag = true;
+			} catch (SQLException e) {
+				log.error("sql:" + sql + "执行失败！", e);
+				flag = false;
+			} finally {
+				if (stmt != null) {
+					try {
+						stmt.close();
+					} catch (SQLException e) {
+						log.error("Statement关闭异常", e);
+					}
+				}
+				releaseConnection(pool, connection);
+			}
+				
+		}
+		return flag;
+	}
+	
 	public static List<Map<String, String>> queryMap(MysqlPoolFactory pool, String sql) {
 		List<Map<String, String>> dataList = new ArrayList<Map<String, String>>();
 		

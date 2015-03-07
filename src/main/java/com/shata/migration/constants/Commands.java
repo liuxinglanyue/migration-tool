@@ -27,4 +27,13 @@ public class Commands {
 	public static String return_response(String id, String body) {
 		return id + "|" + body;
 	}
+	
+	public final static String STATUS_PREPARE = "0";
+	public final static String STATUS_FAIL = "1";
+	public final static String STATUS_SUCC = "2";
+	
+	//暂未实现
+	public final static String STATUS_RETRY = "3"; 
+	public final static String STATUS_RETRY_MIN = "4";
+	public final static String STATUS_RETRY_MAX = "9"; // 重试的最大次数   4-9 总共6次
 }

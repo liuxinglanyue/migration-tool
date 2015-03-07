@@ -21,7 +21,7 @@ public class ServerHandler {
 		} else if (request.startsWith(Commands.GET_SEGMENT)) {
 			
 		} else if (request.startsWith(Commands.UPDATE_STATUS)) {
-			
+			response = SegementManager.update_status(request.substring(14));
 		}
 		return response;
 	}
