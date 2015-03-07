@@ -18,6 +18,9 @@ public class TableEntity implements Comparable<TableEntity> {
 	
 	private long current_id;
 	
+	//标记，数据库中是否存在
+	private int mark;
+	
 	public TableEntity() {
 		
 	}
@@ -105,5 +108,13 @@ public class TableEntity implements Comparable<TableEntity> {
 	public String toString() {
 		return table_from + "|" + table_to + "|" + column_from + "|" 
 				+ column_to + "|" + min_id + "|" + max_id + "|" + ability + "|" + current_id;
+	}
+
+	public int getMark() {
+		return mark;
+	}
+
+	public void setMark(int mark) {
+		this.mark = mark;
 	}
 }
