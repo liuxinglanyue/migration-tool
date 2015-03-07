@@ -1,5 +1,7 @@
 package com.shata.migration.constants;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.shata.migration.connPool.SerConnInstance;
+import com.shata.migration.entity.DeviceEntity;
 import com.shata.migration.entity.TableEntity;
 import com.shata.migration.exception.ConfigException;
 import com.shata.migration.jdbc.JdbcManager;
@@ -43,17 +46,26 @@ public class TableConstants {
 				//说明 当前表迁移完成
 				if(current_id == -1) {
 					tables.remove(table_from);
+					table = null;
 					log.info("数据库表 " + table_from + " 已经迁移完成。");
 					continue;
 				}
 				//异常数据处理
-				if(current_id < 1 || ability < 0) {
-					log.error("数据库记录异常，current_id=" + current_id + " , ability=" + ability);
+				if(current_id < 1) {
+					log.error("数据库记录异常，current_id=" + current_id);
 					current_id = 1;
-					ability = 0;
+				}
+				if(0 != ability) {
+					String id = map.get("id");
+					String sql = "update migration_id_current set ability=0 where id=" + id;
+					if(JdbcManager.update(SerConnInstance.getInstance(), sql)) {
+						log.info("成功，将表" + table_from + " 的能力值修改为0！原先能力值为" + ability);
+					} else {
+						log.error("失败，将表" + table_from + " 的能力值修改为0！原先能力值为" + ability);
+					}
 				}
 				table.setCurrent_id(current_id);
-				table.setAbility(ability);
+				table.setAbility(0);
 				//标记下，数据库中存在
 				table.setMark(1);
 				log.info("表" + table_from + " 在数据库中已经存在！");
@@ -66,7 +78,7 @@ public class TableConstants {
 			}
 			String sql = "insert into migration_id_current(tables,current,ability,create_time) "
 					+ "values ('" + table.getTable_from() + "'," + table.getCurrent_id() + "," 
-					+ table.getAbility() + ",'" + DateUtils.currentDate() + "');";
+					+ table.getAbility() + ",'" + DateUtils.currentDateStr() + "');";
 			if(JdbcManager.update(SerConnInstance.getInstance(), sql)) {
 				log.info("表 " + table.getTable_from() + " 成功插入！");
 			} else {
@@ -99,6 +111,37 @@ public class TableConstants {
 			} catch(Exception e) {
 				log.error("数据库表的配置文件错误！", e);
 				throw e;
+			}
+		}
+	}
+	
+	public static String nextTable() {
+		//获取下一个迁移表之前，先判断能力值是否超时
+		timeout();
+		
+		Collection<TableEntity> ts = tables.values();
+		TableEntity[] tes = ts.toArray(new TableEntity[ts.size()]);
+		Arrays.sort(tes);
+		return tes[0].getColumn_from();
+	}
+	
+	public static void timeout() {
+		Collection<DeviceEntity> des = DeviceConstants.devices.values();
+		if(null == des || des.size() == 0) {
+			return;
+		}
+		
+		for(DeviceEntity device : des) {
+			if(DateUtils.isTimeout(device.getUpdate_time(), DeviceConstants.DEVICE_TIMEOUT)) {
+				TableEntity table = tables.get(device.getTables());
+				table.setAbility(table.getAbility() - device.getAbility());
+				if(table.getAbility() < 0) {
+					log.error("能力值管理出现错误！");
+				}
+				
+				DeviceConstants.devices.remove(device.getKey());
+				log.info("超时，移除设备。" + device.toString());
+				device = null;
 			}
 		}
 	}

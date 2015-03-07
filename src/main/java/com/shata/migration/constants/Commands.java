@@ -2,7 +2,7 @@ package com.shata.migration.constants;
 
 public class Commands {
 	
-	//注册设备 reg_device|devicename|id --> id|tables
+	//注册设备 reg_device|devicename|threadname|ability|id --> id|tables
 	public final static String REG_DEVICE = "reg_device"; // 10
 	
 	//获取id段 get_segment|tables|id --> id|min|max
@@ -13,4 +13,5 @@ public class Commands {
 	
 	//错误
 	public final static String ERROR = "error";
+	
 }

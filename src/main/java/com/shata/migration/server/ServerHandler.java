@@ -1,6 +1,9 @@
 package com.shata.migration.server;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.shata.migration.constants.Commands;
+import com.shata.migration.constants.DeviceConstants;
 
 public class ServerHandler {
 
@@ -12,7 +15,7 @@ public class ServerHandler {
 		String response = Commands.ERROR;
 		
 		if(request.startsWith(Commands.REG_DEVICE)) {
-			response = reg_device(request.substring(11));
+			response = DeviceConstants.reg_device(request.substring(11));
 		} else if (request.startsWith(Commands.GET_SEGMENT)) {
 			
 		} else if (request.startsWith(Commands.UPDATE_STATUS)) {
@@ -21,9 +24,11 @@ public class ServerHandler {
 		return response;
 	}
 	
-	public static String reg_device(String request) {
-		
-		return null;
+	public static String[] splitCommand(String request, int len) {
+		String[] body = StringUtils.split(request, "|");
+		if(null == body || body.length != len) {
+			return null;
+		}
+		return body;
 	}
-	
 }
