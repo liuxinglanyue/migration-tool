@@ -24,7 +24,7 @@ public class StartServer {
 	
 	public static void main(String[] args) throws Exception {
 		PropertyConfigurator.configureAndWatch("config/log4j.properties", 5000L);
-		
+		log.info("\r\n\t      Migration-tool instance start, port:" + Config.getInt("port") + " [version 1.0-SNAPSHOT] \r\n\t\t\t Copyright (C) 2015 JJF");
 		//insert db
 		TableConstants.init();
 		
@@ -42,8 +42,6 @@ public class StartServer {
 				}
 			}
 		}));
-		
-		log.info("\r\n\t      Migration-tool instance start, port:" + Config.getInt("port") + " [version 1.0-SNAPSHOT] \r\n\t\t\t Copyright (C) 2015 JJF");
 		
 		ThreadFactory tf = new NamedThreadFactory("BUSINESSTHREAEFACTORY");
 		ExecutorService threadPool = new ThreadPoolExecutor(20, 100, 30, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), tf);

@@ -20,33 +20,29 @@ public class NettyInstance {
 		init();
 	}
 	
-	private static void init() {
+	private void init() {
 		String targetIP = Config.getSetting("host");
 		int targetPort = Config.getInt("port");
 		int connectTimeout = Config.getInt("timeout");
-		_self.factory = new NettyPoolFactory(_self.config, targetIP, targetPort, connectTimeout);
+		factory = new NettyPoolFactory(config, targetIP, targetPort, connectTimeout);
 	}
 
-	private static void init_pool_config() {
-		_self.config = new GenericObjectPoolConfig();
-		_self.config.setLifo(Config.getBoolean("lifo"));
-		_self.config.setMaxTotal(Config.getInt("maxTotal"));
-		_self.config.setMaxIdle(Config.getInt("maxIdle"));
-		_self.config.setMaxWaitMillis(Config.getLong("maxWait"));
-		_self.config.setMinEvictableIdleTimeMillis(Config.getLong("minEvictableIdleTimeMillis"));
-		_self.config.setMinIdle(Config.getInt("minIdle"));
-		_self.config.setNumTestsPerEvictionRun(Config.getInt("numTestsPerEvictionRun"));
-		_self.config.setTestOnBorrow(Config.getBoolean("testOnBorrow"));
-		_self.config.setTestOnReturn(Config.getBoolean("testOnReturn"));
-		_self.config.setTestWhileIdle(Config.getBoolean("testWhileIdle"));
-		_self.config.setTimeBetweenEvictionRunsMillis(Config.getLong("timeBetweenEvictionRunsMillis"));
+	private void init_pool_config() {
+		config = new GenericObjectPoolConfig();
+		config.setLifo(Config.getBoolean("lifo"));
+		config.setMaxTotal(Config.getInt("maxTotal"));
+		config.setMaxIdle(Config.getInt("maxIdle"));
+		config.setMaxWaitMillis(Config.getLong("maxWait"));
+		config.setMinEvictableIdleTimeMillis(Config.getLong("minEvictableIdleTimeMillis"));
+		config.setMinIdle(Config.getInt("minIdle"));
+		config.setNumTestsPerEvictionRun(Config.getInt("numTestsPerEvictionRun"));
+		config.setTestOnBorrow(Config.getBoolean("testOnBorrow"));
+		config.setTestOnReturn(Config.getBoolean("testOnReturn"));
+		config.setTestWhileIdle(Config.getBoolean("testWhileIdle"));
+		config.setTimeBetweenEvictionRunsMillis(Config.getLong("timeBetweenEvictionRunsMillis"));
 	}
 	
 	public static PoolFactory getInstance() {
-		if(null == _self.factory) {
-			init_pool_config();
-			init();
-		}
 		return _self.factory;
 	}
 	

@@ -20,15 +20,18 @@ import com.shata.migration.exception.ConnectionException;
 public class JdbcManager {
 	private final static Logger log = LoggerFactory.getLogger(JdbcManager.class);
 
-	public void update(MysqlPoolFactory pool, String sql) {
+	public static boolean update(MysqlPoolFactory pool, String sql) {
+		boolean flag = false;
 		Connection connection = getConnection(pool);
 		if(null != connection) {
 			Statement stmt = null;
 			try {
 				stmt = connection.createStatement();
 				stmt.executeUpdate(sql);
+				flag = true;
 			} catch (SQLException e) {
 				log.error("sql:" + sql + "执行失败！", e);
+				flag = false;
 			} finally {
 				if (stmt != null) {
 					try {
@@ -41,9 +44,10 @@ public class JdbcManager {
 			}
 				
 		}
+		return flag;
 	}
 	
-	public List<Map<String, String>> queryMap(MysqlPoolFactory pool, String sql) {
+	public static List<Map<String, String>> queryMap(MysqlPoolFactory pool, String sql) {
 		List<Map<String, String>> dataList = new ArrayList<Map<String, String>>();
 		
 		Connection connection = getConnection(pool);
@@ -84,7 +88,7 @@ public class JdbcManager {
 	
 	
 	
-	public Connection getConnection(MysqlPoolFactory pool) {
+	public static Connection getConnection(MysqlPoolFactory pool) {
 		try {
 			return pool.getConnection();
 		} catch (Exception e) {
@@ -93,7 +97,7 @@ public class JdbcManager {
 		}
 	}
 	
-	public void releaseConnection(MysqlPoolFactory pool, Connection connection) {
+	public static void releaseConnection(MysqlPoolFactory pool, Connection connection) {
 		try {
 			pool.releaseConnection(connection);
 		} catch (Exception e) {

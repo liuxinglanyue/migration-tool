@@ -30,9 +30,9 @@ public class Config {
 		else
 			iniSetting("config.properties");
 		
-		File poolFile = new File("config/config.properties");
+		File poolFile = new File("config/pool.properties");
 		if(poolFile.exists()) {
-			iniSetting("config/config.properties");
+			iniSetting("config/pool.properties");
 		}
 	}
 
@@ -47,7 +47,7 @@ public class Config {
 			Enumeration<?> item = p.propertyNames();
 			while (item.hasMoreElements()) {
 				String key = (String) item.nextElement();
-				setting.put(key, p.getProperty(key));
+				setting.put(key, p.getProperty(key).trim());
 			}
 			in.close();
 		} catch (FileNotFoundException e) {
