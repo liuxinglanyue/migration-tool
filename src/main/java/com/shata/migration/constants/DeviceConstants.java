@@ -14,11 +14,16 @@ import com.shata.migration.utils.DateUtils;
 public class DeviceConstants {
 	private final static Logger log = LoggerFactory.getLogger(DeviceConstants.class);
 	
-	//设备的能力值 超时时间
+	//设备的能力值 超时时间（单位min）
 	public final static int DEVICE_TIMEOUT = Config.getInt("device_timeout");
 	
 	public final static Map<String, DeviceEntity> devices = new ConcurrentHashMap<String, DeviceEntity>();
 	
+	/**
+	 * 注册设备
+	 * @param request
+	 * @return
+	 */
 	public static String reg_device(String request) {
 		String[] bodies = ServerHandler.splitCommand(request, 4);
 		if(null == bodies) {
@@ -33,8 +38,25 @@ public class DeviceConstants {
 		
 		log.info("请求命令" + Commands.REG_DEVICE + ",注册成功。" + device.toString());
 		
-		String response = bodies[3] + "|" + table;
+		return Commands.return_response(bodies[3], table);
+	}
+	
+	/**
+	 * 注销设备
+	 * @param request
+	 * @return
+	 */
+	public static String logout_device(String request) {
+		String[] bodies = ServerHandler.splitCommand(request, 3);
+		if(null == bodies) {
+			log.error("请求命令" + Commands.REG_DEVICE + "的参数错误！");
+			return "请求命令" + Commands.REG_DEVICE + "的参数错误！";
+		}
+		DeviceEntity device = devices.get(bodies[0] + bodies[1]);
+		if(TableConstants.reduceAbility(device)) {
+			device = null;
+		}
 		
-		return response;
+		return Commands.return_response(bodies[2], Commands.SUCC);
 	}
 }

@@ -16,6 +16,8 @@ public class ServerHandler {
 		
 		if(request.startsWith(Commands.REG_DEVICE)) {
 			response = DeviceConstants.reg_device(request.substring(11));
+		} else if(request.startsWith(Commands.LOGOUT_DEVICE)) {
+			response = DeviceConstants.logout_device(request.substring(14));
 		} else if (request.startsWith(Commands.GET_SEGMENT)) {
 			
 		} else if (request.startsWith(Commands.UPDATE_STATUS)) {

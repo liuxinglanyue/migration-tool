@@ -120,6 +120,10 @@ public class TableConstants {
 		timeout();
 		
 		Collection<TableEntity> ts = tables.values();
+		//所有表都迁移完成
+		if(null == ts || ts.size() == 0) {
+			return Commands.TABLE_TABLE;
+		}
 		TableEntity[] tes = ts.toArray(new TableEntity[ts.size()]);
 		Arrays.sort(tes);
 		return tes[0].getColumn_from();
@@ -133,16 +137,41 @@ public class TableConstants {
 		
 		for(DeviceEntity device : des) {
 			if(DateUtils.isTimeout(device.getUpdate_time(), DeviceConstants.DEVICE_TIMEOUT)) {
-				TableEntity table = tables.get(device.getTables());
-				table.setAbility(table.getAbility() - device.getAbility());
-				if(table.getAbility() < 0) {
-					log.error("能力值管理出现错误！");
+				if(reduceAbility(device)) {
+					device = null;
 				}
-				
-				DeviceConstants.devices.remove(device.getKey());
-				log.info("超时，移除设备。" + device.toString());
-				device = null;
 			}
 		}
+	}
+	
+	public static boolean reduceAbility(DeviceEntity device) {
+		if(null == device) {
+			return false;
+		}
+		
+		TableEntity table = tables.get(device.getTables());
+		//表 迁移完成
+		if(null == table) {
+			return false;
+		}
+		
+		int ability = table.getAbility() - device.getAbility();
+		if(ability < 0) {
+			log.error("能力值管理出现错误！");
+			ability = 0;
+		}
+		//将修改后的能力值 更新到数据库
+		String sql = "update migration_id_current set ability=" + ability + " where tables='" + table.getColumn_from() + "';";
+		if(JdbcManager.update(SerConnInstance.getInstance(), sql)) {
+			log.info("成功，将表" + table.getColumn_from() + " 的能力值修改为" + ability + ", 原先能力值为" + table.getAbility());
+			table.setAbility(ability);
+			
+			DeviceConstants.devices.remove(device.getKey());
+			log.info("超时，移除设备。" + device.toString());
+			return true;
+		} else {
+			log.error("失败，将表" + table.getColumn_from() + " 的能力值修改为" + ability + ", 原先能力值为" + table.getAbility());
+		}
+		return false;
 	}
 }
