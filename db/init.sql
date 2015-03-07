@@ -29,18 +29,20 @@ create table `migration_id_current` (
   UNIQUE KEY `UK_tables` (`tables`) 
 ) engine=innodb default charset=utf8 comment='迁移表，存储当前id';
 
+
 /*============================================*/
 /*table:migration_device               */
-/*info:迁移组件                         */
+/*info:迁移组件(改为存储于 内存中)               */
 /*========================================*/
-drop table if exists `migration_device`;
+/*drop table if exists `migration_device`;
 create table `migration_device` (
   `id` int(11) not null auto_increment comment '主键id',
   `devicename` varchar(100) not null comment '设备名称，pid@hostname@ip',
+  `threadname` varchar(100) not null comment '线程名称',
   `tables` varchar(32) not null comment '数据库表名',
   `ability` int(11) default 0 comment '能力值',
   `create_time` datetime default null comment '创建时间',
   `update_time` datetime default null comment '更新时间',
   primary key (`id`),
   UNIQUE KEY `UK_device` (`devicename`,`tables`) 
-) engine=innodb default charset=utf8 comment='迁移表，存储当前id';
+) engine=innodb default charset=utf8 comment='迁移表，存储当前id';*/
