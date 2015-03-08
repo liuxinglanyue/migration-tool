@@ -22,6 +22,8 @@ public class SegementManager {
 	
 	//迁移id段的超时时间（单位min）
 	public final static int SEGEMENT_TIMEOUT = Config.getInt("segment_timeout");
+	//判读id段是否超时，线程的间隔时间（单位min）
+	public final static int SEGEMENT_INTERVAL = 1;
 	//id段 跨度 默认100
 	public final static int SEGEMENT_ID = Config.getInt("segment");
 	//用于string的synchronized

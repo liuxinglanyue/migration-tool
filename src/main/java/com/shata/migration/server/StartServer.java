@@ -1,6 +1,8 @@
 package com.shata.migration.server;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -27,6 +29,10 @@ public class StartServer {
 		log.info("\r\n\t      Migration-tool instance start, port:" + Config.getInt("port") + " [version 1.0-SNAPSHOT] \r\n\t\t\t Copyright (C) 2015 JJF");
 		//insert db
 		TableConstants.init();
+		
+		//定时判断id段是否超时
+		ScheduledExecutorService scheduleExec = Executors.newScheduledThreadPool(1);
+		scheduleExec.scheduleAtFixedRate(new SegementTimeoutTask(), 0, SegementManager.SEGEMENT_INTERVAL, TimeUnit.MINUTES);
 		
 		final NettyServer nettyServer = new NettyServer();
 		
