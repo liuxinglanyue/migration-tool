@@ -74,6 +74,43 @@ public class JdbcManager {
 		return flag;
 	}
 	
+	public static Map<String, String> queryOneMap(MysqlPoolFactory pool, String sql) {
+		Map<String, String> hashMap = new HashMap<String, String>();
+		
+		Connection connection = getConnection(pool);
+		if(null != connection) {
+			Statement stmt = null;
+			try {
+				stmt = connection.createStatement();
+				ResultSet rs = stmt.executeQuery(sql);
+				ResultSetMetaData rsmd = rs.getMetaData();
+
+				while (rs.next()) {
+					for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+						String column = rsmd.getColumnName(i).toLowerCase();
+						hashMap.put(column, rs.getString(i));
+					}
+					break;
+				}
+
+				rs.close();
+			} catch (SQLException e) {
+				log.error("sql:" + sql + "执行失败！", e);
+			} finally {
+				if (stmt != null) {
+					try {
+						stmt.close();
+					} catch (SQLException e) {
+						log.error("Statement关闭异常", e);
+					}
+				}
+				releaseConnection(pool, connection);
+			}
+				
+		}
+		return hashMap;
+	}
+	
 	public static List<Map<String, String>> queryMap(MysqlPoolFactory pool, String sql) {
 		List<Map<String, String>> dataList = new ArrayList<Map<String, String>>();
 		

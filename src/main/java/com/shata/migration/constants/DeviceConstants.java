@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.shata.migration.entity.DeviceEntity;
+import com.shata.migration.entity.TableEntity;
 import com.shata.migration.server.ServerHandler;
 import com.shata.migration.utils.Config;
 import com.shata.migration.utils.DateUtils;
@@ -38,7 +39,11 @@ public class DeviceConstants {
 		
 		log.info("请求命令" + Commands.REG_DEVICE + ",注册成功。" + device.toString());
 		
-		return Commands.return_response(bodies[3], table);
+		TableEntity te = TableConstants.tables.get(table);
+		if(null == te) {
+			Commands.return_response(bodies[3], table + "|null|null|null");
+		}
+		return Commands.return_response(bodies[3], table + "|" + te.getTable_to() + "|" + te.getColumn_from() + "|" + te.getColumn_to());
 	}
 	
 	/**

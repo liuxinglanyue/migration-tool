@@ -18,8 +18,8 @@ public class ServerHandler {
 			response = DeviceConstants.reg_device(request.substring(11));
 		} else if(request.startsWith(Commands.LOGOUT_DEVICE)) {
 			response = DeviceConstants.logout_device(request.substring(14));
-		} else if (request.startsWith(Commands.GET_SEGMENT)) {
-			response = SegementManager.get_segment(request.substring(12));
+		} else if (request.startsWith(Commands.GET_SEGEMENT)) {
+			response = SegementManager.get_segment(request.substring(13));
 		} else if (request.startsWith(Commands.UPDATE_STATUS)) {
 			response = SegementManager.update_status(request.substring(14));
 		}
