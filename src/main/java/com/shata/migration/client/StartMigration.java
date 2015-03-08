@@ -1,5 +1,8 @@
 package com.shata.migration.client;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +13,7 @@ import com.shata.migration.netty.pool.NettyInstance;
 import com.shata.migration.netty.pool.PoolFactory;
 import com.shata.migration.utils.Config;
 import com.shata.migration.utils.InetInfo;
+import com.shata.migration.utils.NamedThreadFactory;
 
 public class StartMigration {
 	private final static Logger log = LoggerFactory.getLogger(StartMigration.class);
@@ -25,6 +29,12 @@ public class StartMigration {
 				+ " ability=" + Config.getSetting("ability") + " thread_num=" + Config.getSetting("thread_num")
 				+ "\r\n\t\t\t Copyright (C) 2015 JJF");
 		//
+		int nThreads = Integer.parseInt(Config.getSetting("thread_num"));
+		ExecutorService threadPool = Executors.newFixedThreadPool(nThreads, new NamedThreadFactory("migration"));
+		
+		for(int i=0; i<nThreads; i++) {
+			threadPool.execute(new MigrationTask());
+		}
 		PoolFactory poolFactory = NettyInstance.getInstance();
 		Client conn = poolFactory.getConnection();
 		String[] bodies = (String[]) conn.invokeSync(Commands.REG_DEVICE + "|" + InetInfo.DEVICE_NAME + "|" + Thread.currentThread().getName() + "|" + Config.getSetting("ability"));

@@ -149,6 +149,12 @@ public class JdbcManager {
 		return dataList;
 	}
 	
+	public static boolean migration(MysqlPoolFactory pool_from, String table_from, String column_from
+			, MysqlPoolFactory pool_to, String table_to, String column_to, boolean fail) {
+		
+		return false;
+	}
+	
 	
 	
 	
