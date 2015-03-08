@@ -7,12 +7,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.shata.migration.constants.Commands;
-import com.shata.migration.netty.Client;
-import com.shata.migration.netty.pool.NettyInstance;
-import com.shata.migration.netty.pool.PoolFactory;
 import com.shata.migration.utils.Config;
-import com.shata.migration.utils.InetInfo;
 import com.shata.migration.utils.NamedThreadFactory;
 
 public class StartMigration {
@@ -35,19 +30,5 @@ public class StartMigration {
 		for(int i=0; i<nThreads; i++) {
 			threadPool.execute(new MigrationTask());
 		}
-		PoolFactory poolFactory = NettyInstance.getInstance();
-		Client conn = poolFactory.getConnection();
-		String[] bodies = (String[]) conn.invokeSync(Commands.REG_DEVICE + "|" + InetInfo.DEVICE_NAME + "|" + Thread.currentThread().getName() + "|" + Config.getSetting("ability"));
-		System.out.println(bodies[0] + "  " + bodies[1] + "  " + bodies[2]);
-		
-		String[] ids = (String[]) conn.invokeSync(Commands.GET_SEGEMENT + "|" + bodies[1] + "|" + InetInfo.DEVICE_NAME + "|" + Thread.currentThread().getName());
-		System.out.println(ids[0] + "  " + ids[1] + "  " + ids[2]);
-		
-		String[] status = (String[]) conn.invokeSync(Commands.UPDATE_STATUS + "|" + bodies[1] + "|" + ids[1] + "|" + ids[2] + "|" + Commands.STATUS_SUCC);
-		System.out.println(status[0] + "  " + status[1]);
-		
-		String[] logout = (String[]) conn.invokeSync(Commands.LOGOUT_DEVICE + "|" + InetInfo.DEVICE_NAME + "|" + Thread.currentThread().getName());
-		System.out.println(logout[0] + "  " + logout[1]);
-		poolFactory.releaseConnection(conn);
 	}
 }

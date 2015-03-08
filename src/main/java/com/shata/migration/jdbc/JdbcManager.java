@@ -1,6 +1,7 @@
 package com.shata.migration.jdbc;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -14,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.shata.migration.connPool.MysqlPoolFactory;
+import com.shata.migration.constants.MigrationConstants;
 import com.shata.migration.exception.ConnectionException;
 
 
@@ -149,13 +151,63 @@ public class JdbcManager {
 		return dataList;
 	}
 	
-	public static boolean migration(MysqlPoolFactory pool_from, String table_from, String column_from
-			, MysqlPoolFactory pool_to, String table_to, String column_to, boolean fail) {
+	public static boolean migration(MysqlPoolFactory pool_from, MysqlPoolFactory pool_to
+			, String sql, String insert_sql, String select_sql, boolean fail) {
 		
+		Connection connection = getConnection(pool_from);
+		Connection conn_to = getConnection(pool_to);
+		if(null != connection) {
+			Statement stmt = null;
+			PreparedStatement ps = null;
+			try {
+				stmt = connection.createStatement();
+				ps = conn_to.prepareStatement(insert_sql);
+				
+				ResultSet rs = stmt.executeQuery(sql);
+				ResultSetMetaData rsmd = rs.getMetaData();
+
+				while (rs.next()) {
+					List<String> list = new ArrayList<String>();
+					boolean flag = true;
+					for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+						String column = rsmd.getColumnName(i).toLowerCase();
+						String value = rs.getString(i);
+						if(MigrationConstants.isEmpty(column, value)) {
+							flag = false;
+							break;
+						}
+						list.add(value);
+					}
+					
+					if(flag && list.size() > 0) {
+						for(int i=0; i<list.size(); i++) {
+							ps.setString(i + 1, list.get(i));
+						}
+						ps.addBatch();
+					}
+				}
+				ps.executeBatch();
+				ps.clearBatch();
+
+				rs.close();
+			} catch (SQLException e) {
+				log.error("sql:" + sql + "执行失败！", e);
+			} finally {
+				if (stmt != null) {
+					try {
+						stmt.close();
+						ps.close();
+					} catch (SQLException e) {
+						log.error("Statement关闭异常", e);
+					}
+				}
+				releaseConnection(pool_to, conn_to);
+				releaseConnection(pool_from, connection);
+			}
+				
+		}
 		return false;
 	}
-	
-	
 	
 	
 	public static Connection getConnection(MysqlPoolFactory pool) {

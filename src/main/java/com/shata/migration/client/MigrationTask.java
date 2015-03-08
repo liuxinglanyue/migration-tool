@@ -1,5 +1,6 @@
 package com.shata.migration.client;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,11 +15,15 @@ import com.shata.migration.utils.InetInfo;
 
 public class MigrationTask implements Runnable {
 	private final static Logger log = LoggerFactory.getLogger(MigrationTask.class);
-
+	
 	private String table;
 	private String table_to;
 	private String column_from;
 	private String column_to;
+	
+	private String sql;
+	private String insert_sql;
+	private String select_sql;
 	
 	private long min;
 	private long max;
@@ -35,14 +40,16 @@ public class MigrationTask implements Runnable {
 			log.error("获取netty连接失败！", e);
 			throw new MigrationException("获取netty连接失败！");
 		}
-		while(true) {
-			//1 注册设备
-			reg_device();
-			if(Commands.TABLE_TABLE.equals(table)) {
-				log.info("所有表都迁移完成！");
-				break;
-			}
-			
+		
+		boolean loop = true;
+		//1 注册设备
+		reg_device();
+		if(Commands.TABLE_TABLE.equals(table)) {
+			log.info("所有表都迁移完成！");
+			loop = false;
+		}
+		
+		while(loop) {
 			//2 获取迁移的id段
 			get_segement();
 			if(min == 0 && max == 0) {
@@ -57,8 +64,8 @@ public class MigrationTask implements Runnable {
 			}
 			
 			//3 迁移
-			boolean flag = JdbcManager.migration(ConnInstance.getFromInstance(), table, column_from
-					, ConnInstance.getToInstance(), table_to, column_to, fail);
+			boolean flag = JdbcManager.migration(ConnInstance.getFromInstance()
+					, ConnInstance.getToInstance(), sql, insert_sql, select_sql, fail);
 			
 			//4 状态更新
 			update_status(flag ? Commands.STATUS_SUCC : Commands.STATUS_FAIL);
@@ -95,6 +102,8 @@ public class MigrationTask implements Runnable {
 		if(bodies.length == 4) {
 			fail = true;
 		}
+		
+		sql = "select " + column_from + " from " + table + " where id>=" + min + " and id <=" + max;
 		
 		return true;
 	}
@@ -170,6 +179,18 @@ public class MigrationTask implements Runnable {
 		table_to = bodies[2];
 		column_from = bodies[3];
 		column_to = bodies[4];
+		
+		insert_sql = "insert into " + table_to + "(" + column_to + ") values(";
+		if(StringUtils.isNotBlank(column_from)) {
+			String[] columns = StringUtils.split(column_from, ",");
+			for(int i=0; i<columns.length; i++) {
+				if(i != 0) {
+					insert_sql += ",";
+				}
+				insert_sql += "?";
+			}
+		}
+		insert_sql += ")";
 		
 		return true;
 	}
