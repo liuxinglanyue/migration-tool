@@ -54,8 +54,15 @@ public class SegementManager {
 				}
 				String sql = "insert into migration_id_segment(tables,min,max,status,create_time) values ('" 
 						+ table + "'," + min + "," + max + "," + Commands.STATUS_PREPARE + ",'" + DateUtils.currentDateStr() + "');";
+				String update_current_id = "update migration_id_current set current=" + (max + 1) + " where tables='" + table + "'";
 				if(JdbcManager.update(SerConnInstance.getInstance(), sql)) {
-					te.setCurrent_id(max + 1);
+					if(JdbcManager.update(SerConnInstance.getInstance(), update_current_id)) {
+						te.setCurrent_id(max + 1);
+					} else {
+						//删除上面插入的migration_id_segment
+						//这里删除失败了也没事儿， 因为有超时设置在，超时将置为失败
+						update_status_db(table, String.valueOf(min), String.valueOf(max), Commands.STATUS_SUCC);
+					}
 				} else {
 					//获取失败
 					min = -1;

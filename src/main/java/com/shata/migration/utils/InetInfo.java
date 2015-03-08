@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 public class InetInfo {
 	private final static Logger log = LoggerFactory.getLogger(InetInfo.class);
+	
+	public final static String DEVICE_NAME = getDeviceName();
 
 	public static String getHostIp() {
 		Enumeration<NetworkInterface> netInterfaces = null;  
@@ -55,7 +57,7 @@ public class InetInfo {
         }  
     }  
 	
-	public static String getDeviceName() {
+	private static String getDeviceName() {
 		RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();  
         return runtime.getName() + "@" + getHostIp();
 	}

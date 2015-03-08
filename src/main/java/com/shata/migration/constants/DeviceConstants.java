@@ -37,11 +37,14 @@ public class DeviceConstants {
 				, ability, DateUtils.currentDate(), DateUtils.currentLong());
 		devices.put(device.getKey(), device);
 		
+		//将设备能力值 添加到migration_id_current表上
+		TableConstants.addAbility(table, ability);
+		
 		log.info("请求命令" + Commands.REG_DEVICE + ",注册成功。" + device.toString());
 		
 		TableEntity te = TableConstants.tables.get(table);
 		if(null == te) {
-			Commands.return_response(bodies[3], table + "|null|null|null");
+			return Commands.return_response(bodies[3], table + "|null|null|null");
 		}
 		return Commands.return_response(bodies[3], table + "|" + te.getTable_to() + "|" + te.getColumn_from() + "|" + te.getColumn_to());
 	}

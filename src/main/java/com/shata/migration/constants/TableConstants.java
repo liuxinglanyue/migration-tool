@@ -126,7 +126,7 @@ public class TableConstants {
 		}
 		TableEntity[] tes = ts.toArray(new TableEntity[ts.size()]);
 		Arrays.sort(tes);
-		return tes[0].getColumn_from();
+		return tes[0].getTable_from();
 	}
 	
 	public static void timeout() {
@@ -161,16 +161,31 @@ public class TableConstants {
 			ability = 0;
 		}
 		//将修改后的能力值 更新到数据库
-		String sql = "update migration_id_current set ability=" + ability + " where tables='" + table.getColumn_from() + "';";
+		String sql = "update migration_id_current set ability=" + ability + " where tables='" + table.getTable_from() + "';";
 		if(JdbcManager.update(SerConnInstance.getInstance(), sql)) {
-			log.info("成功，将表" + table.getColumn_from() + " 的能力值修改为" + ability + ", 原先能力值为" + table.getAbility());
+			log.info("成功，将表" + table.getTable_from() + " 的能力值修改为" + ability + ", 原先能力值为" + table.getAbility());
 			table.setAbility(ability);
 			
 			DeviceConstants.devices.remove(device.getKey());
-			log.info("超时，移除设备。" + device.toString());
+			log.info("超时，成功移除设备。" + device.toString());
 			return true;
 		} else {
-			log.error("失败，将表" + table.getColumn_from() + " 的能力值修改为" + ability + ", 原先能力值为" + table.getAbility());
+			log.error("失败，将表" + table.getTable_from() + " 的能力值修改为" + ability + ", 原先能力值为" + table.getAbility());
+		}
+		return false;
+	}
+	
+	public static boolean addAbility(String table, int ability) {
+		TableEntity te = tables.get(table);
+		if(null == te) {
+			return false;
+		}
+		String sql = "update migration_id_current set ability=ability+" + ability + " where tables='" + table + "'";
+		if(JdbcManager.update(SerConnInstance.getInstance(), sql)) {
+			te.setAbility(te.getAbility() + ability);
+			log.info("成功，将表" + table + " 的能力值修改为" + ability);
+		} else {
+			log.error("失败，将表" + table + " 的能力值修改为" + ability);
 		}
 		return false;
 	}
