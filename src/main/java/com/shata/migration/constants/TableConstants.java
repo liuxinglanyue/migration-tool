@@ -53,7 +53,7 @@ public class TableConstants {
 				//异常数据处理
 				if(current_id < 1) {
 					log.error("数据库记录异常，current_id=" + current_id);
-					current_id = 1;
+					current_id = table.getMin_id();
 				}
 				if(0 != ability) {
 					String id = map.get("id");
@@ -106,7 +106,7 @@ public class TableConstants {
 				table.setMin_id(Config.getLong(tables_from_arr[i] + "_minId"));
 				table.setMax_id(Config.getLong(tables_from_arr[i] + "_maxId"));
 				table.setAbility(0);
-				table.setCurrent_id(1);
+				table.setCurrent_id(table.getMin_id());
 				tables.put(tables_from_arr[i], table);
 			} catch(Exception e) {
 				log.error("数据库表的配置文件错误！", e);
