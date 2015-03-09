@@ -25,6 +25,7 @@ public class MigrationTask implements Runnable {
 	private String insert_sql;
 	private String select_sql;
 	private String column_append;
+	private boolean exist_all_content;
 	
 	private long min;
 	private long max;
@@ -66,7 +67,7 @@ public class MigrationTask implements Runnable {
 			
 			//3 迁移
 			boolean flag = JdbcManager.migration(ConnInstance.getFromInstance()
-					, ConnInstance.getToInstance(), sql, insert_sql, select_sql, fail);
+					, ConnInstance.getToInstance(), sql, insert_sql, select_sql, column_append, fail, exist_all_content);
 			
 			//4 状态更新
 			update_status(flag ? Commands.STATUS_SUCC : Commands.STATUS_FAIL);
@@ -180,6 +181,7 @@ public class MigrationTask implements Runnable {
 		table_to = bodies[2];
 		column_from = bodies[3];
 		column_to = bodies[4];
+		column_append = null;
 		
 		insert_sql = "insert into " + table_to + "(" + column_to + ") values(";
 		if(StringUtils.isNotBlank(column_to) && StringUtils.isNotBlank(column_from)) {
@@ -206,10 +208,12 @@ public class MigrationTask implements Runnable {
 		insert_sql += ")";
 		
 		select_sql = "select id from " + table_to + " where 1=1 ";
+		exist_all_content = false;
 		if(StringUtils.isNotBlank(column_to)) {
 			String[] columns = StringUtils.split(column_to, ",");
 			for(int i=0; i<columns.length; i++) {
-				if("sp_code".equals(columns[i]) || "all_content".equals(columns[i])) {
+				if("all_content".equals(columns[i])) {
+					exist_all_content = true;
 					continue;
 				}
 				select_sql += " and " + columns[i] + "=? ";

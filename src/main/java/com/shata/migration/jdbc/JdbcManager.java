@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,61 +153,170 @@ public class JdbcManager {
 	}
 	
 	public static boolean migration(MysqlPoolFactory pool_from, MysqlPoolFactory pool_to
-			, String sql, String insert_sql, String select_sql, boolean fail) {
+			, String sql, String insert_sql, String select_sql, String column_append, boolean fail, boolean exist_all_content) {
+		boolean is_sp_code = false;
+		boolean is_all_content = false;
+		if(null != column_append) {
+			if("sp_code".equals(column_append)) {
+				is_sp_code = true;
+			} else if("all_content".equals(column_append)) {
+				is_all_content = true;
+			}
+		}
+		//1 查询数据
+		List<List<String>> segementValues = new ArrayList<List<String>>();
 		
 		Connection connection = getConnection(pool_from);
-		Connection conn_to = getConnection(pool_to);
-		if(null != connection) {
-			Statement stmt = null;
-			PreparedStatement ps = null;
-			try {
-				stmt = connection.createStatement();
-				ps = conn_to.prepareStatement(insert_sql);
-				
-				ResultSet rs = stmt.executeQuery(sql);
-				ResultSetMetaData rsmd = rs.getMetaData();
+		if(null == connection) {
+			return false;
+		}
+		Statement stmt = null;
+		try {
+			stmt = connection.createStatement();
+			
+			ResultSet rs = stmt.executeQuery(sql);
+			ResultSetMetaData rsmd = rs.getMetaData();
 
-				while (rs.next()) {
-					List<String> list = new ArrayList<String>();
-					boolean flag = true;
-					for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-						String column = rsmd.getColumnName(i).toLowerCase();
-						String value = rs.getString(i);
-						if(MigrationConstants.isEmpty(column, value)) {
-							flag = false;
+			while (rs.next()) {
+				List<String> list = new ArrayList<String>(rsmd.getColumnCount());
+				String sp_code = "";
+				String all_content = "";
+				for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+					String column = rsmd.getColumnName(i).toLowerCase();
+					String value = rs.getString(i);
+					if(MigrationConstants.isEmpty(column, value)) {
+						list = null;
+						break;
+					}
+					//判断日期record_time
+					if(!fail && "record_time".equals(column)) {
+						int flag = MigrationConstants.compare(value);
+						if(flag == 0) {
+							fail = true;
+						} else if(flag == 1) {
+							//大于跨度时间的上限，不插入到数据库
+							list = null;
 							break;
 						}
-						list.add(value);
 					}
 					
-					if(flag && list.size() > 0) {
-						for(int i=0; i<list.size(); i++) {
-							ps.setString(i + 1, list.get(i));
-						}
-						ps.addBatch();
+					//获取sp_code
+					if(is_sp_code && "channel_idn".equals(column)) {
+						sp_code = StringUtils.split(value, "-")[0];
 					}
+					//获取all_content
+					if(is_all_content && !"sp_code".equals(column) && !"all_content".equals(column)) {
+						all_content += value;
+					}
+					
+					list.add(value);
 				}
-				ps.executeBatch();
-				ps.clearBatch();
+				if(null != list) {
+					//这里只要为true，就需要sp_code 或 all_content 哪怕为 空
+					if(is_sp_code) {
+						list.add(sp_code);
+					} else if(is_all_content) {
+						list.add(all_content);
+					}
+					segementValues.add(list);
+				}
+			}
 
-				rs.close();
+			rs.close();
+		} catch (SQLException e) {
+			log.error("sql:" + sql + "执行失败！", e);
+			return false;
+		} finally {
+			if (stmt != null) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					log.error("Statement关闭异常", e);
+				}
+			}
+			releaseConnection(pool_from, connection);
+		}
+				
+		
+		//segementValues中无数据，返回成功
+		if(null == segementValues || segementValues.size() == 0) {
+			return true;
+		}
+		
+		//2 分析数据
+		//当fail为true时，需要判断数据库中是否已存在此数据
+		List<List<String>> succValues = new ArrayList<List<String>>(segementValues.size());
+		if(fail) {
+			Connection conn_from = getConnection(pool_from);
+			if(null == conn_from) {
+				return false;
+			}
+			PreparedStatement ps = null;
+			try {
+				ps = conn_from.prepareStatement(select_sql);
+				for(List<String> list : segementValues) {
+					int size = exist_all_content ? list.size() - 1 : list.size();
+					for(int i=0; i<size; i++) {
+						ps.setString(i + 1, list.get(i));
+					}
+					ResultSet rs = ps.executeQuery();
+					if(!rs.next()) {
+						succValues.add(list);
+					}
+					rs.close();
+				}
+				
 			} catch (SQLException e) {
-				log.error("sql:" + sql + " insert_sql:" + insert_sql + "执行失败！", e);
+				log.error("select_sql:" + select_sql + "执行失败！", e);
+				return false;
 			} finally {
-				if (stmt != null) {
+				if (ps != null) {
 					try {
-						stmt.close();
 						ps.close();
 					} catch (SQLException e) {
-						log.error("Statement关闭异常", e);
+						log.error("PreparedStatement关闭异常", e);
 					}
 				}
-				releaseConnection(pool_to, conn_to);
-				releaseConnection(pool_from, connection);
+				releaseConnection(pool_from, conn_from);
 			}
-				
 		}
-		return false;
+		
+		if(null == succValues || succValues.size() == 0) {
+			return true;
+		}
+		
+		//3 插入数据
+		Connection conn_to = getConnection(pool_to);
+		if(null == conn_to) {
+			return false;
+		}
+		PreparedStatement ps = null;
+		try {
+			ps = conn_to.prepareStatement(insert_sql);
+			for(List<String> list : succValues) {
+				for(int i=0; i<list.size(); i++) {
+					ps.setString(i + 1, list.get(i));
+				}
+				ps.addBatch();
+			}
+			
+			ps.executeBatch();
+			ps.clearBatch();
+		} catch (SQLException e) {
+			log.error("insert_sql:" + insert_sql + "执行失败！", e);
+			return false;
+		} finally {
+			if (ps != null) {
+				try {
+					ps.close();
+				} catch (SQLException e) {
+					log.error("PreparedStatement关闭异常", e);
+				}
+			}
+			releaseConnection(pool_to, conn_to);
+		}
+		
+		return true;
 	}
 	
 	
