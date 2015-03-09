@@ -24,6 +24,7 @@ public class MigrationTask implements Runnable {
 	private String sql;
 	private String insert_sql;
 	private String select_sql;
+	private String column_append;
 	
 	private long min;
 	private long max;
@@ -181,8 +182,20 @@ public class MigrationTask implements Runnable {
 		column_to = bodies[4];
 		
 		insert_sql = "insert into " + table_to + "(" + column_to + ") values(";
-		if(StringUtils.isNotBlank(column_from)) {
-			String[] columns = StringUtils.split(column_from, ",");
+		if(StringUtils.isNotBlank(column_to) && StringUtils.isNotBlank(column_from)) {
+			String[] columns = StringUtils.split(column_to, ",");
+			String[] columns_from = StringUtils.split(column_from, ",");
+			if(columns.length != columns_from.length && columns.length - columns_from.length != 1) {
+				throw new MigrationException("不支持的表：" + table + ",column_to长度必须 等于 或 大于一个 column_from长度。columns_from=" 
+						+ column_from + " columns_to=" + column_to);
+			}
+			if(columns.length - columns_from.length == 1) {
+				column_append = columns[columns.length - 1];
+				if(null == column_append || (!"sp_code".equals(column_append) && !"all_content".equals(column_append))) {
+					throw new MigrationException("不支持的表：" + table + ",新增列仅支持 sp_code或all_content。columns_from=" 
+							+ column_from + " columns_to=" + column_to);
+				}
+			}
 			for(int i=0; i<columns.length; i++) {
 				if(i != 0) {
 					insert_sql += ",";
@@ -191,6 +204,17 @@ public class MigrationTask implements Runnable {
 			}
 		}
 		insert_sql += ")";
+		
+		select_sql = "select id from " + table_to + " where 1=1 ";
+		if(StringUtils.isNotBlank(column_to)) {
+			String[] columns = StringUtils.split(column_to, ",");
+			for(int i=0; i<columns.length; i++) {
+				if("sp_code".equals(columns[i]) || "all_content".equals(columns[i])) {
+					continue;
+				}
+				select_sql += " and " + columns[i] + "=? ";
+			}
+		}
 		
 		return true;
 	}

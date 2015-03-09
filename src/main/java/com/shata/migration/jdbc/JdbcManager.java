@@ -191,7 +191,7 @@ public class JdbcManager {
 
 				rs.close();
 			} catch (SQLException e) {
-				log.error("sql:" + sql + "执行失败！", e);
+				log.error("sql:" + sql + " insert_sql:" + insert_sql + "执行失败！", e);
 			} finally {
 				if (stmt != null) {
 					try {
