@@ -247,13 +247,13 @@ public class JdbcManager {
 		//当fail为true时，需要判断数据库中是否已存在此数据
 		List<List<String>> succValues = new ArrayList<List<String>>(segementValues.size());
 		if(fail) {
-			Connection conn_from = getConnection(pool_from);
-			if(null == conn_from) {
+			Connection conn_to = getConnection(pool_to);
+			if(null == conn_to) {
 				return false;
 			}
 			PreparedStatement ps = null;
 			try {
-				ps = conn_from.prepareStatement(select_sql);
+				ps = conn_to.prepareStatement(select_sql);
 				for(List<String> list : segementValues) {
 					int size = exist_all_content ? list.size() - 1 : list.size();
 					for(int i=0; i<size; i++) {
@@ -277,7 +277,7 @@ public class JdbcManager {
 						log.error("PreparedStatement关闭异常", e);
 					}
 				}
-				releaseConnection(pool_from, conn_from);
+				releaseConnection(pool_to, conn_to);
 			}
 		}
 		

@@ -65,12 +65,13 @@ public class SegementManager {
 					}
 				} else {
 					//获取失败
-					min = -1;
-					max = -1;
+					log.info("失败,获取id段,表名:" + table + ",设备信息:" + bodies[1] + ",线程信息:" + bodies[2]);
+					return Commands.return_response(bodies[3], Commands.SEGEMENT_FAIL);
 				}
 			}
 		}
 		if(0 != min && 0 != max) {
+			log.info("成功,获取id段,表名:" + table + ",id段:" + min + "-" + max + ",设备信息:" + bodies[1] + ",线程信息:" + bodies[2]);
 			return Commands.return_response(bodies[3], min + "|" + max);
 		}
 		//current id全部迁移完成，接下来获取迁移失败的
@@ -86,14 +87,19 @@ public class SegementManager {
 					max = Long.parseLong(max_id);
 				} else {
 					//获取失败
-					min = -1;
-					max = -1;
+					log.info("失败,获取id段,表名:" + table + ",设备信息:" + bodies[1] + ",线程信息:" + bodies[2]);
+					return Commands.return_response(bodies[3], Commands.SEGEMENT_FAIL);
 				}
 			}
 		}
 		if(min == 0 && max == 0) {
+			//将迁移成功的表 从TableConstants.tables 中删除, 并将current_id 改为 -1
+			TableConstants.updateTableSucc(table);
+			
+			log.info("迁移完成，表名:" + table);
 			return Commands.return_response(bodies[3], Commands.SEGEMENT_SUCC);
 		} else {
+			log.info("成功,获取id段,但是数据必须逐条比对，表名:" + table + ",id段:" + min + "-" + max + ",设备信息:" + bodies[1] + ",线程信息:" + bodies[2]);
 			return Commands.return_response(bodies[3], min + "|" + max + "|fail");
 		}
 	}
@@ -109,6 +115,7 @@ public class SegementManager {
 			return Commands.return_response(bodies[4], Commands.SUCC);
 		}
 		
+		log.error("更新迁移id段的状态失败，表名:" + bodies[0] + ",min=" + bodies[1] + ",max=" + bodies[2] + ",status=" + status);
 		return Commands.return_response(bodies[4], Commands.ERROR);
 	}
 	

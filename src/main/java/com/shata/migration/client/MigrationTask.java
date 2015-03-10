@@ -66,8 +66,11 @@ public class MigrationTask implements Runnable {
 			}
 			
 			//3 迁移
+			long start_time = System.currentTimeMillis();
 			boolean flag = JdbcManager.migration(ConnInstance.getFromInstance()
 					, ConnInstance.getToInstance(), sql, insert_sql, select_sql, column_append, fail, exist_all_content);
+			log.info("迁移" + (flag ? "成功" : "失败") + ",花费时间:" + (System.currentTimeMillis() - start_time) 
+					+ ",表名:" + table + ",id段:" + min + "-" + max);
 			
 			//4 状态更新
 			update_status(flag ? Commands.STATUS_SUCC : Commands.STATUS_FAIL);

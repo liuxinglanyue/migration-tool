@@ -175,6 +175,22 @@ public class TableConstants {
 		return false;
 	}
 	
+	public static boolean updateTableSucc(String table) {
+		TableEntity te = tables.remove(table);
+		//便于回收
+		if(null != te) {
+			te = null;
+		}
+		
+		//将current 改为 -1
+		String sql = "update migration_id_current set current=-1 where tables='" + table + "'";
+		//此处更新 失败也没事儿，不影响程序的正确性
+		if(JdbcManager.update(SerConnInstance.getInstance(), sql)) {
+			return true;
+		}
+		return false;
+	}
+	
 	public static boolean addAbility(String table, int ability) {
 		TableEntity te = tables.get(table);
 		if(null == te) {

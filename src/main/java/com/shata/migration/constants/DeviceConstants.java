@@ -61,6 +61,7 @@ public class DeviceConstants {
 			return "请求命令" + Commands.REG_DEVICE + "的参数错误！";
 		}
 		DeviceEntity device = devices.get(bodies[0] + bodies[1]);
+		log.info("注销设备！设备信息:" + device.toString());
 		if(TableConstants.reduceAbility(device)) {
 			device = null;
 			return Commands.return_response(bodies[2], Commands.SUCC);
