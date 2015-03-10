@@ -97,7 +97,7 @@ public class NettyServerHandler extends SimpleChannelUpstreamHandler {
 				log.debug("request:" + (String)message + " response:" + response);
 				// already timeout,so not return
 				if ((System.currentTimeMillis() - beginTime) >= timeout) {
-					log.warn("timeout,so give up send response to client,request message is:" + message + ",client is:" + ctx.getChannel().getRemoteAddress()
+					log.warn("timeout,so give up send response to client,request message is:" + message + ",response is:" + response + ",client is:" + ctx.getChannel().getRemoteAddress()
 							+ ",consumetime is:" + (System.currentTimeMillis() - beginTime) + ",timeout is:" + timeout);
 					return;
 				}

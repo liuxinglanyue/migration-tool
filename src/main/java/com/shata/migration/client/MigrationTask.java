@@ -94,8 +94,13 @@ public class MigrationTask implements Runnable {
 			} catch (Exception e) {
 				log.error("获取id段异常！" + table + "|" + InetInfo.DEVICE_NAME + "|" + Thread.currentThread().getName(), e);
 			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
 		}
-		if(null == bodies || (bodies.length != 5 && bodies.length != 4) || "-1".equals(bodies[1]) || "-1".equals(bodies[2])) {
+		if(null == bodies || (bodies.length != 3 && bodies.length != 4) || "-1".equals(bodies[1]) || "-1".equals(bodies[2])) {
 			throw new MigrationException("获取id段，重试10次还是失败！" + table + "|" + InetInfo.DEVICE_NAME + "|" + Thread.currentThread().getName());
 		}
 		
@@ -120,6 +125,11 @@ public class MigrationTask implements Runnable {
 				}
 			} catch (Exception e) {
 				log.error("更新状态异常！" + table + "|" + min + "|" + max + "|" + status, e);
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 			}
 		}
 		if(null == bodies || bodies.length != 2) {
@@ -146,6 +156,11 @@ public class MigrationTask implements Runnable {
 			} catch (Exception e) {
 				log.error("注销设备异常！" + InetInfo.DEVICE_NAME + "|" + Thread.currentThread().getName(), e);
 			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
 		}
 		if(null == bodies || bodies.length != 2) {
 			log.error("注销设备，重试10次还是失败！" + InetInfo.DEVICE_NAME + "|" + Thread.currentThread().getName());
@@ -171,6 +186,11 @@ public class MigrationTask implements Runnable {
 				}
 			} catch (Exception e) {
 				log.error("注册设备异常！" + InetInfo.DEVICE_NAME + "|" + Thread.currentThread().getName(), e);
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 			}
 		}
 		if(null == bodies || bodies.length != 5) {

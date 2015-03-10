@@ -44,7 +44,7 @@ public class ConnInstance {
 		String url = Config.getSetting("jdbc_url_to");
 		String user = Config.getSetting("jdbc_user_to");
 		String password = Config.getSetting("jdbc_password_to");
-		mysqlConn_from = new MysqlPoolFactory(config, url, user, password);
+		mysqlConn_to = new MysqlPoolFactory(config, url, user, password);
 	}
 	
 	public static MysqlPoolFactory getFromInstance() {

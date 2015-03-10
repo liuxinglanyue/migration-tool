@@ -102,7 +102,7 @@ public class TableConstants {
 			TableEntity table = new TableEntity(tables_from_arr[i], tables_to_arr[i]);
 			try {
 				table.setColumn_from(Config.getSetting(tables_from_arr[i] + "_from"));
-				table.setColumn_to(Config.getSetting(tables_from_arr[i] + "_to"));
+				table.setColumn_to(Config.getSetting(tables_to_arr[i] + "_to"));
 				table.setMin_id(Config.getLong(tables_from_arr[i] + "_minId"));
 				table.setMax_id(Config.getLong(tables_from_arr[i] + "_maxId"));
 				table.setAbility(0);

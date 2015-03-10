@@ -78,7 +78,7 @@ public class SegementManager {
 				+ " and tables='" + table + "';";
 		synchronized (pool.intern(table)) {
 			Map<String, String> map = JdbcManager.queryOneMap(SerConnInstance.getInstance(), sql);
-			if(null != map) {
+			if(null != map && map.size() > 0) {
 				String min_id = map.get("min");
 				String max_id = map.get("max");
 				if(update_status_db(table, min_id, max_id, Commands.STATUS_PREPARE)) {
