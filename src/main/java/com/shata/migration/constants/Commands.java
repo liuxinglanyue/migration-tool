@@ -8,7 +8,7 @@ public class Commands {
 	//注销设备 logout_device|devicename|threadname|id --> id|succ
 	public final static String LOGOUT_DEVICE = "logout_device"; //13
 	
-	//获取id段 get_segement|tables|devicename|threadname|id --> id|min|max ( min|max  0|0 表示tables完成迁移了  -1|-1 表示获取失败)
+	//获取id段 get_segement|tables|devicename|threadname|id --> id|min|max ( min|max  0|0 表示tables完成迁移了  -1|-1 表示获取失败  -2|n 表示线程暂停n秒)
 	// --> id|min|max|fail 代表之前失败的记录，需要一条一条比对
 	public final static String GET_SEGEMENT = "get_segement"; // 12
 	

@@ -176,6 +176,12 @@ public class TableConstants {
 	}
 	
 	public static boolean updateTableSucc(String table) {
+		//先判断是否所有id段 都迁移完成
+		String select_sql = "select id from migration_id_segment where tables='" + table + "'";
+		if(JdbcManager.exist(SerConnInstance.getInstance(), select_sql)) {
+			return false;
+		}
+		
 		TableEntity te = tables.remove(table);
 		//便于回收
 		if(null != te) {

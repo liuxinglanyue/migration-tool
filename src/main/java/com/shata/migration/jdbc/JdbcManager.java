@@ -22,6 +22,36 @@ import com.shata.migration.exception.ConnectionException;
 
 public class JdbcManager {
 	private final static Logger log = LoggerFactory.getLogger(JdbcManager.class);
+	
+	public static boolean exist(MysqlPoolFactory pool, String sql) {
+		boolean flag = false;
+		Connection connection = getConnection(pool);
+		if(null != connection) {
+			Statement stmt = null;
+			try {
+				stmt = connection.createStatement();
+				ResultSet rs = stmt.executeQuery(sql);
+				while(rs.next()) {
+					flag = true;
+					break;
+				}
+				rs.close();
+			} catch (SQLException e) {
+				log.error("sql:" + sql + "执行失败！", e);
+			} finally {
+				if (stmt != null) {
+					try {
+						stmt.close();
+					} catch (SQLException e) {
+						log.error("Statement关闭异常", e);
+					}
+				}
+				releaseConnection(pool, connection);
+			}
+				
+		}
+		return flag;
+	}
 
 	public static boolean update(MysqlPoolFactory pool, String sql) {
 		boolean flag = false;
@@ -192,6 +222,7 @@ public class JdbcManager {
 					if(!fail && "record_time".equals(column)) {
 						int flag = MigrationConstants.compare(value);
 						if(flag == 0) {
+							log.debug("record_time=" + value + ",危险数据，需要校验。");
 							fail = true;
 						} else if(flag == 1) {
 							//大于跨度时间的上限，不插入到数据库
@@ -279,6 +310,8 @@ public class JdbcManager {
 				}
 				releaseConnection(pool_to, conn_to);
 			}
+		} else {
+			succValues = segementValues;
 		}
 		
 		if(null == succValues || succValues.size() == 0) {

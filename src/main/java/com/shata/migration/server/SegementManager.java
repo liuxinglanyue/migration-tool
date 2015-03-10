@@ -22,8 +22,8 @@ public class SegementManager {
 	
 	//迁移id段的超时时间（单位min）
 	public final static int SEGEMENT_TIMEOUT = Config.getInt("segment_timeout");
-	//判读id段是否超时，线程的间隔时间（单位min）
-	public final static int SEGEMENT_INTERVAL = 1;
+	//判读id段是否超时，线程的间隔时间（单位second）
+	public final static int SEGEMENT_INTERVAL = 20;
 	//id段 跨度 默认100
 	public final static int SEGEMENT_ID = Config.getInt("segment");
 	//用于string的synchronized
@@ -94,7 +94,11 @@ public class SegementManager {
 		}
 		if(min == 0 && max == 0) {
 			//将迁移成功的表 从TableConstants.tables 中删除, 并将current_id 改为 -1
-			TableConstants.updateTableSucc(table);
+			//false 还存在未成功的id段
+			if(!TableConstants.updateTableSucc(table)) {
+				log.info("迁移失败的数据");
+				return Commands.return_response(bodies[3], "-2|" + SEGEMENT_TIMEOUT * 60 + SEGEMENT_INTERVAL);
+			}
 			
 			log.info("迁移完成，表名:" + table);
 			return Commands.return_response(bodies[3], Commands.SEGEMENT_SUCC);

@@ -63,6 +63,13 @@ public class MigrationTask implements Runnable {
 					break;
 				}
 				continue;
+			} else if(min == -2) {
+				try {
+					Thread.sleep(max * 1000);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+				continue;
 			}
 			
 			//3 迁移

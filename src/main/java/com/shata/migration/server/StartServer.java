@@ -32,7 +32,7 @@ public class StartServer {
 		
 		//定时判断id段是否超时
 		ScheduledExecutorService scheduleExec = Executors.newScheduledThreadPool(1);
-		scheduleExec.scheduleAtFixedRate(new SegementTimeoutTask(), 0, SegementManager.SEGEMENT_INTERVAL, TimeUnit.MINUTES);
+		scheduleExec.scheduleAtFixedRate(new SegementTimeoutTask(), 0, SegementManager.SEGEMENT_INTERVAL, TimeUnit.SECONDS);
 		
 		final NettyServer nettyServer = new NettyServer();
 		
